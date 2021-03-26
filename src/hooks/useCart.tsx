@@ -35,12 +35,12 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       const productExists = cart.find(cartItem => cartItem.id === productId)
 
       if (productExists) {
-        const { id, amount } = await api.get<Stock>(`stock/${productId}`)
+        const productStock = await api.get<Stock>(`stock/${productId}`)
           .then(response => response.data)
 
         const newAmount = productExists.amount + 1
 
-        if (newAmount <= amount) {
+        if (newAmount <= productStock.amount) {
           await updateProductAmount({productId, amount: newAmount})
         } else {
           toast.error('Quantidade solicitada fora de estoque')
