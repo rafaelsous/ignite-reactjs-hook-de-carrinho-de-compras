@@ -111,3 +111,28 @@ export const Total = styled.div`
     margin-left: 5px;
   }
 `;
+
+export const EmptyCartContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: #fff;
+  border-radius: 4px;
+  color: #333;
+
+  strong {
+    font-size: 24px;
+  }
+
+  span {
+    font-size: 16px;
+
+    a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+  }
+`;

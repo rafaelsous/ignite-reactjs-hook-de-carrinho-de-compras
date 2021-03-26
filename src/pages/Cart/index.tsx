@@ -1,13 +1,14 @@
-import React from 'react';
 import {
   MdDelete,
   MdAddCircleOutline,
   MdRemoveCircleOutline,
+  MdShoppingBasket
 } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 
-// import { useCart } from '../../hooks/useCart';
-// import { formatPrice } from '../../util/format';
-import { Container, ProductTable, Total } from './styles';
+import { useCart } from '../../hooks/useCart';
+import { formatPrice } from '../../util/format';
+import { Container, EmptyCartContainer, ProductTable, Total } from './styles';
 
 interface Product {
   id: number;
@@ -18,101 +19,119 @@ interface Product {
 }
 
 const Cart = (): JSX.Element => {
-  // const { cart, removeProduct, updateProductAmount } = useCart();
+  const { cart, removeProduct, updateProductAmount } = useCart();
 
-  // const cartFormatted = cart.map(product => ({
-  //   // TODO
-  // }))
-  // const total =
-  //   formatPrice(
-  //     cart.reduce((sumTotal, product) => {
-  //       // TODO
-  //     }, 0)
-  //   )
+  const cartFormatted = cart.map(product => ({
+    ...product,
+    amount: product.amount > 0 ? product.amount : 1,
+    priceFormatted: formatPrice(product.price),
+    subTotal: formatPrice(product.amount * product.price)
+  }))
+
+  const total =
+    formatPrice(
+      cartFormatted.reduce((sumTotal, product) => {
+        sumTotal += (product.amount * product.price)
+
+        return sumTotal
+      }, 0)
+    )
 
   function handleProductIncrement(product: Product) {
-    // TODO
+    updateProductAmount({ productId: product.id, amount: product.amount + 1 });
   }
 
   function handleProductDecrement(product: Product) {
-    // TODO
+    updateProductAmount({ productId: product.id, amount: product.amount - 1 });
   }
 
   function handleRemoveProduct(productId: number) {
-    // TODO
+    removeProduct(productId)
   }
 
   return (
-    <Container>
-      <ProductTable>
-        <thead>
-          <tr>
-            <th aria-label="product image" />
-            <th>PRODUTO</th>
-            <th>QTD</th>
-            <th>SUBTOTAL</th>
-            <th aria-label="delete icon" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr data-testid="product">
-            <td>
-              <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
-            </td>
-            <td>
-              <strong>Tênis de Caminhada Leve Confortável</strong>
-              <span>R$ 179,90</span>
-            </td>
-            <td>
-              <div>
-                <button
-                  type="button"
-                  data-testid="decrement-product"
-                // disabled={product.amount <= 1}
-                // onClick={() => handleProductDecrement()}
-                >
-                  <MdRemoveCircleOutline size={20} />
-                </button>
-                <input
-                  type="text"
-                  data-testid="product-amount"
-                  readOnly
-                  value={2}
-                />
-                <button
-                  type="button"
-                  data-testid="increment-product"
-                // onClick={() => handleProductIncrement()}
-                >
-                  <MdAddCircleOutline size={20} />
-                </button>
-              </div>
-            </td>
-            <td>
-              <strong>R$ 359,80</strong>
-            </td>
-            <td>
-              <button
-                type="button"
-                data-testid="remove-product"
-              // onClick={() => handleRemoveProduct(product.id)}
-              >
-                <MdDelete size={20} />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </ProductTable>
+    <>
+      {cart.length > 0 ? (
+        <Container>
+          <ProductTable>
+            <thead>
+              <tr>
+                <th aria-label="product image" />
+                <th>PRODUTO</th>
+                <th>QTD</th>
+                <th>SUBTOTAL</th>
+                <th aria-label="delete icon" />
+              </tr>
+            </thead>
+            <tbody>
+              {cartFormatted.map(product => (
+                <tr key={product.id} data-testid="product">
+                  <td>
+                    <img src={product.image} alt={product.title} />
+                  </td>
+                  <td>
+                    <strong>{product.title}</strong>
+                    <span>{product.priceFormatted}</span>
+                  </td>
+                  <td>
+                    <div>
+                      <button
+                        type="button"
+                        data-testid="decrement-product"
+                        disabled={product.amount <= 1}
+                        onClick={() => handleProductDecrement(product)}
+                      >
+                        <MdRemoveCircleOutline size={20} />
+                      </button>
+                      <input
+                        type="text"
+                        data-testid="product-amount"
+                        readOnly
+                        value={product.amount}
+                      />
+                      <button
+                        type="button"
+                        data-testid="increment-product"
+                        onClick={() => handleProductIncrement(product)}
+                      >
+                        <MdAddCircleOutline size={20} />
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <strong>{product.subTotal}</strong>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      data-testid="remove-product"
+                      onClick={() => handleRemoveProduct(product.id)}
+                    >
+                      <MdDelete size={20} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </ProductTable>
 
-      <footer>
-        <button type="button">Finalizar pedido</button>
+          <footer>
+            <button type="button">Finalizar pedido</button>
 
-        <Total>
-          <span>TOTAL</span>
-          <strong>R$ 359,80</strong>
-        </Total>
-      </footer>
-    </Container>
+            <Total>
+              <span>TOTAL</span>
+              <strong>{total}</strong>
+            </Total>
+          </footer>
+        </Container>
+      ) : (
+        <EmptyCartContainer>
+          <MdShoppingBasket size={48} color="#333" />
+          <strong>Carrinho de compras vazio</strong>
+          <span>Que tal começarmos por <Link to="/">aqui</Link>?</span>
+        </EmptyCartContainer>
+      )}
+    </>
   );
 };
 
